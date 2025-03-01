@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/png" href="/tt-logo.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Tennant Ticker</title>
+    <style>
+      /* Ensure the body has a dark background by default */
+      body {
+        background-color: #111827;
+        color: white;
+        margin: 0;
+        padding: 0;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+      }
+      #root {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+      }
+      /* Loading state */
+      .loading {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        width: 100vw;
+        background-color: #111827;
+        color: white;
+        font-family: system-ui, -apple-system, sans-serif;
+      }
+      .loading-spinner {
+        width: 50px;
+        height: 50px;
+        border: 3px solid #3b82f6;
+        border-radius: 50%;
+        border-top-color: transparent;
+        animation: spin 1s linear infinite;
+      }
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root">
+      <div class="loading">
+        <div class="loading-spinner"></div>
+      </div>
+    </div>
+    <script type="module" src="/src/main.tsx"></script>
+    <script>
+      // Error handling
+      window.addEventListener('error', function(event) {
+        console.error('Global error:', event.error);
+        const root = document.getElementById('root');
+        if (root && event.error) {
+          root.innerHTML = `
+            <div style="display: flex; justify-content: center; align-items: center; height: 100vh; background-color: #111827; color: white; text-align: center; padding: 20px;">
+              <div>
+                <h1 style="color: #ef4444; margin-bottom: 20px;">Something went wrong</h1>
+                <button onclick="window.location.reload()" style="background: #3b82f6; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer;">
+                  Reload page
+                </button>
+              </div>
+            </div>
+          `;
+        }
+      });
+    </script>
+  </body>
+</html>
