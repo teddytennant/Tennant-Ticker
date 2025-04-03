@@ -1,0 +1,47 @@
+/* Direct fix for search inputs - higher specificity to override other styles */
+input[type="text"], 
+input[type="search"], 
+.search-input, 
+input[placeholder*="search" i],
+input[placeholder*="Search" i],
+form input:not(.sidebar-tooltip) {
+  pointer-events: auto !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  display: block !important;
+  z-index: 1000 !important;
+}
+
+/* Ensure parent containers of search inputs are interactive */
+form:has(input),
+div:has(> input),
+header form,
+nav form,
+.relative:has(> input),
+.search-container {
+  pointer-events: auto !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  z-index: 999 !important;
+}
+
+/* Ensure the search icon is visible but not interfering */
+form .absolute:not(.sidebar-tooltip),
+.relative .absolute:not(.sidebar-tooltip) {
+  pointer-events: none !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+/* Override any styles that might hide inputs */
+[type="text"][style*="display: none"],
+[type="search"][style*="display: none"],
+input[style*="visibility: hidden"],
+input[style*="opacity: 0"],
+input[style*="pointer-events: none"] {
+  pointer-events: auto !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  display: block !important;
+  z-index: 1000 !important;
+} 

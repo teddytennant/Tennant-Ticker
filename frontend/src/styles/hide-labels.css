@@ -1,0 +1,29 @@
+/* Hide all dock labels */
+[class*="DockLabel"] {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+/* Hide any other labels that might be appearing */
+.absolute.-right-28,
+.absolute.-top-10 {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+/* Ensure sidebar tooltips are hidden by default and only shown on hover */
+.sidebar-tooltip {
+  opacity: 0 !important;
+  visibility: hidden !important;
+  transition: opacity 0.2s, visibility 0.2s !important;
+}
+
+/* Show sidebar tooltips only on hover */
+.group:hover .sidebar-tooltip {
+  opacity: 1 !important;
+  visibility: visible !important;
+} 

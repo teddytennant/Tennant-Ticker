@@ -1,7 +1,0 @@
-StockMonitor Netlify Deployment
-Deployment ID: SM-DEPLOY-2025-02-28T21-28-40-556Z
-Timestamp: 2/28/2025, 4:28:40 PM
-Build Version: 1740778120556
-
-This file serves as a unique identifier for this specific Netlify deployment.
-You can use this file to verify which version of the application is currently deployed.

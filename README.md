@@ -1,78 +1,100 @@
-# StockMonitor
+# TennantTicker Market Data Platform
 
-A professional stock monitoring application for tracking market data and financial information.
+TennantTicker is a professional-grade market data platform designed to provide investors with real-time stock information, market insights, and portfolio tracking tools.
 
-## Setup
+## Features
 
-1. Clone this repository
-   ```
-   git clone https://github.com/yourusername/stockmonitor.git
-   cd stockmonitor
-   ```
+- **Stock Monitor**: Track your favorite stocks with real-time price updates
+- **Investor Insights**: View market indices, top movers, and sector performance 
+- **News Feed**: Stay informed with the latest market news
+- **Technical Analysis**: View RSI and volatility indicators for stocks
+- **Portfolio Tracking**: Manage and track your investments
 
-2. Install dependencies
-   ```
-   npm install
-   ```
+## System Requirements
 
-3. Create a `.env` file based on `.env.example` and add your API keys
-   ```
-   cp .env.example .env
-   ```
+- Python 3.9+ with pip
+- Node.js 18+ with npm
+- Internet connection for market data
 
-4. Start the development server
-   ```
-   npm run dev
-   ```
+## Installation and Setup
 
-## Deployment
+### 1. Clone the repository
 
-### Deploying to Netlify via GitHub
+```bash
+git clone <repository-url>
+cd tennantticker
+```
 
-1. Push your changes to GitHub
-   ```
-   git add .
-   git commit -m "Your commit message"
-   git push
-   ```
+### 2. Set up API keys
 
-2. Connect your GitHub repository to Netlify:
-   - Go to [Netlify](https://app.netlify.com/)
-   - Click "Add new site" > "Import an existing project"
-   - Select GitHub and authorize Netlify
-   - Choose your StockMonitor repository
-   - Configure build settings:
-     - Build command: `npm run build`
-     - Publish directory: `dist`
-   - Add your environment variables in the Netlify dashboard
-   - Click "Deploy site"
+Create a `.env` file in the frontend directory:
 
-### Manual Deployment
+```
+VITE_NEWS_API_KEY=your_news_api_key_here
+VITE_ENABLE_MOCK_DATA=false
+VITE_ENABLE_LOGGING=true
+VITE_API_BASE_URL=http://localhost:3001/api
+VITE_WEBSOCKET_URL=ws://localhost:3001
+```
 
-If you prefer to deploy manually:
+To get a News API key, register at [newsapi.org](https://newsapi.org).
 
-1. Build the application
-   ```
-   npm run build
-   ```
+### 3. Start the development environment
 
-2. Upload the `dist` directory to Netlify via the Netlify dashboard
+Run the start script to launch both backend and frontend:
 
-## Environment Variables
+```bash
+./start-dev.sh
+```
 
-The following environment variables are required:
+This script will:
+- Set up a Python virtual environment
+- Install backend dependencies
+- Start the Flask backend on port 3001
+- Install frontend dependencies
+- Start the React frontend on port 5173 (default Vite port)
 
-- `VITE_ALPHA_VANTAGE_API_KEY`: API key for Alpha Vantage
-- `VITE_FINNHUB_API_KEY`: API key for Finnhub
-- `VITE_NEWS_API_KEY`: API key for News API
-- `VITE_XAI_API_KEY`: API key for XAI
+## Manual Setup (if start script doesn't work)
+
+### Backend Setup
+
+```bash
+cd backend
+python -m venv venv
+source venv/bin/activate  # On Windows, use: venv\Scripts\activate
+pip install -r requirements.txt
+python wsgi.py
+```
+
+### Frontend Setup
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+## Architecture
+
+- **Backend**: Python Flask API serving market data from yfinance
+- **Frontend**: React application with TypeScript and modern UI components
+- **Data Sources**: 
+  - yfinance for market data (no API key required)
+  - News API for market news (requires API key)
 
 ## Troubleshooting
 
-If you encounter an infinite loading screen:
+- **Backend connection issues**: Ensure the Flask server is running on port 3001
+- **No stock data**: Check your internet connection and backend logs
+- **News API errors**: Verify your News API key is correct in the .env file
 
-1. Check browser console for errors
-2. Verify authentication is working
-3. Clear browser cache and cookies
-4. Try a different browser
-5. Check Netlify deployment logs
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+## Credits
+
+TennantTicker uses several open-source libraries and APIs:
+- yfinance for market data
+- React and various UI components
+- Flask for the backend API

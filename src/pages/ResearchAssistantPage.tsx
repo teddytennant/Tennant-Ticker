@@ -27,7 +27,15 @@ import {
   RefreshCw,
   ChevronDown,
   Filter,
-  Calendar
+  Calendar,
+  Share2,
+  Download,
+  Star,
+  PieChart,
+  LineChart,
+  Zap,
+  Target,
+  Layers
 } from 'lucide-react';
 import { getFinancialAdvice, getPortfolioAdvice, getWebsiteHelp, getStockNewsSummary } from '../services/researchApi';
 import ReactMarkdown from 'react-markdown';
@@ -52,32 +60,39 @@ interface Message {
 interface SuggestedQuery {
   icon?: React.ElementType;
   text: string;
+  category: string;
 }
 
 const SUGGESTED_PROMPTS = [
   {
-    icon: TrendingUp,
-    text: "Analyze key technical indicators for major tech stocks"
+    icon: LineChart,
+    text: "Analyze market trends and technical indicators",
+    category: "Technical Analysis"
   },
   {
     icon: Brain,
-    text: "Explain current market sentiment around AI stocks"
+    text: "Evaluate AI and tech sector opportunities",
+    category: "Sector Analysis"
   },
   {
-    icon: BarChart2,
-    text: "What are the key market risks I should be aware of?"
+    icon: Target,
+    text: "Identify potential investment targets",
+    category: "Stock Screening"
   },
   {
-    icon: Search,
-    text: "Compare performance of different market sectors"
+    icon: PieChart,
+    text: "Portfolio diversification strategies",
+    category: "Portfolio Management"
   },
   {
-    icon: Lightbulb,
-    text: "Recommend dividend stocks for passive income"
+    icon: Layers,
+    text: "Multi-asset allocation advice",
+    category: "Asset Allocation"
   },
   {
-    icon: Calendar,
-    text: "What important economic events are coming up?"
+    icon: Zap,
+    text: "High-growth stock opportunities",
+    category: "Growth Investing"
   }
 ];
 
@@ -201,7 +216,7 @@ export function ResearchAssistantPage() {
     const setFixedHeights = () => {
       if (chatContainerRef.current) {
         const windowHeight = window.innerHeight;
-        const headerHeight = 60; // Proper header height
+        const headerHeight = 70; // Proper header height
         const inputAreaHeight = 130; // Proper input area height
         const appDockHeight = 80; // Account for app dock
         
@@ -221,6 +236,20 @@ export function ResearchAssistantPage() {
     
     return () => {
       window.removeEventListener('resize', setFixedHeights);
+    };
+  }, []);
+
+  // Prevent body scrolling when this component is mounted
+  useEffect(() => {
+    // Save the original overflow style
+    const originalStyle = document.body.style.overflow;
+    
+    // Prevent scrolling on the body
+    document.body.style.overflow = 'hidden';
+    
+    // Restore original style when component unmounts
+    return () => {
+      document.body.style.overflow = originalStyle;
     };
   }, []);
 
@@ -331,10 +360,10 @@ export function ResearchAssistantPage() {
   const getSuggestedQueries = useCallback((): SuggestedQuery[] => {
     if (useStocksContext && portfolio.length > 0) {
       return [
-        { icon: BarChart4, text: "Analyze my portfolio and suggest improvements." },
-        { icon: Search, text: "What sectors am I missing in my portfolio?" },
-        { icon: TrendingUp, text: "Which of my stocks have the best growth potential?" },
-        { icon: Brain, text: "What risks are present in my current portfolio?" }
+        { icon: BarChart4, text: "Analyze my portfolio and suggest improvements.", category: "Portfolio Management" },
+        { icon: Search, text: "What sectors am I missing in my portfolio?", category: "Portfolio Management" },
+        { icon: TrendingUp, text: "Which of my stocks have the best growth potential?", category: "Portfolio Management" },
+        { icon: Brain, text: "What risks are present in my current portfolio?", category: "Portfolio Management" }
       ];
     }
     
@@ -397,40 +426,40 @@ export function ResearchAssistantPage() {
     switch (activeSidebarSection) {
       case 'market-analysis':
         return [
-          { icon: TrendingUp, text: "Analyze key technical indicators for major tech stocks" },
-          { icon: Brain, text: "Explain current market sentiment around AI stocks" },
-          { icon: BarChart2, text: "What are the key market risks I should be aware of?" },
-          { icon: Search, text: "Compare performance of different market sectors" }
+          { icon: TrendingUp, text: "Analyze key technical indicators for major tech stocks", category: "Technical Analysis" },
+          { icon: Brain, text: "Explain current market sentiment around AI stocks", category: "Sector Analysis" },
+          { icon: BarChart2, text: "What are the key market risks I should be aware of?", category: "Technical Analysis" },
+          { icon: Search, text: "Compare performance of different market sectors", category: "Sector Analysis" }
         ];
       case 'research-reports':
         return [
-          { icon: FileText, text: "Summarize recent earnings reports for top S&P 500 companies" },
-          { icon: Calendar, text: "What important economic events are coming up?" },
-          { icon: Filter, text: "Find stocks with strong fundamentals in the healthcare sector" },
-          { icon: Lightbulb, text: "What are the emerging trends in renewable energy investments?" }
+          { icon: FileText, text: "Summarize recent earnings reports for top S&P 500 companies", category: "Research Reports" },
+          { icon: Calendar, text: "What important economic events are coming up?", category: "Economic Indicators" },
+          { icon: Filter, text: "Find stocks with strong fundamentals in the healthcare sector", category: "Stock Screening" },
+          { icon: Lightbulb, text: "What are the emerging trends in renewable energy investments?", category: "Sector Analysis" }
         ];
       case 'portfolio-insights':
         if (portfolio.length > 0) {
           return [
-            { icon: BarChart4, text: "Analyze my portfolio and suggest improvements" },
-            { icon: Search, text: "What sectors am I missing in my portfolio?" },
-            { icon: TrendingUp, text: "Which of my stocks have the best growth potential?" },
-            { icon: Brain, text: "What risks are present in my current portfolio?" }
+            { icon: BarChart4, text: "Analyze my portfolio and suggest improvements", category: "Portfolio Management" },
+            { icon: Search, text: "What sectors am I missing in my portfolio?", category: "Portfolio Management" },
+            { icon: TrendingUp, text: "Which of my stocks have the best growth potential?", category: "Portfolio Management" },
+            { icon: Brain, text: "What risks are present in my current portfolio?", category: "Portfolio Management" }
           ];
         } else {
           return [
-            { icon: Briefcase, text: "What should I consider when building a diversified portfolio?" },
-            { icon: Lightbulb, text: "Recommend dividend stocks for passive income" },
-            { icon: BarChart2, text: "Which sectors are expected to outperform in the next year?" },
-            { icon: Search, text: "What are the best beginner-friendly ETFs to invest in?" }
+            { icon: Briefcase, text: "What should I consider when building a diversified portfolio?", category: "Portfolio Management" },
+            { icon: Lightbulb, text: "Recommend dividend stocks for passive income", category: "Portfolio Management" },
+            { icon: BarChart2, text: "Which sectors are expected to outperform in the next year?", category: "Portfolio Management" },
+            { icon: Search, text: "What are the best beginner-friendly ETFs to invest in?", category: "Portfolio Management" }
           ];
         }
       case 'help-resources':
         return [
-          { icon: HelpCircle, text: "What investment resources and tools do you recommend for beginners?" },
-          { icon: BookOpen, text: "Explain common investment terms and concepts" },
-          { icon: Info, text: "How do I interpret financial statements?" },
-          { icon: MessageCircle, text: "What questions should I ask before investing in a stock?" }
+          { icon: HelpCircle, text: "What investment resources and tools do you recommend for beginners?", category: "Help & Resources" },
+          { icon: BookOpen, text: "Explain common investment terms and concepts", category: "Help & Resources" },
+          { icon: Info, text: "How do I interpret financial statements?", category: "Help & Resources" },
+          { icon: MessageCircle, text: "What questions should I ask before investing in a stock?", category: "Help & Resources" }
         ];
       default:
         return SUGGESTED_PROMPTS;
@@ -438,27 +467,48 @@ export function ResearchAssistantPage() {
   }, [activeSidebarSection, portfolio]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-900 via-gray-800 to-gray-900 flex flex-col h-screen">
-      {/* Header - with proper height */}
-      <header className="h-[60px] bg-gray-900/95 backdrop-blur-md border-b border-gray-800 z-50 flex-shrink-0">
-        <div className="h-full max-w-7xl mx-auto px-4 flex items-center justify-between">
-          <div className="flex items-center">
+    <div className="min-h-screen bg-[#0a0f1d] flex flex-col">
+      {/* Modern Glass Header */}
+      <header className="h-[70px] bg-[#0f1429]/95 backdrop-blur-xl border-b border-white/5 z-50 flex-shrink-0 shadow-lg">
+        <div className="h-full max-w-[2000px] mx-auto px-4 flex items-center justify-between">
+          <div className="flex items-center gap-6">
             <h1 className="text-xl font-bold text-white flex items-center">
-              <Bot className="h-5 w-5 mr-2 text-blue-400" />
+              <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg mr-3">
+                <Bot className="h-5 w-5 text-white" />
+              </div>
               Research Assistant
+              <span className="ml-3 px-2 py-1 bg-blue-500/10 text-blue-400 text-xs font-medium rounded-full border border-blue-500/20">
+                PRO
+              </span>
             </h1>
+            
+            <div className="hidden md:flex items-center gap-4">
+              <button className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-gray-300 transition-colors text-sm">
+                <Share2 className="w-4 h-4" />
+                Share
+              </button>
+              <button className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-gray-300 transition-colors text-sm">
+                <Download className="w-4 h-4" />
+                Export
+              </button>
+              <button className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-gray-300 transition-colors text-sm">
+                <Star className="w-4 h-4" />
+                Save
+              </button>
+            </div>
           </div>
+          
           <div className="flex items-center gap-3">
             <button
               onClick={handleClearMessages}
-              className="p-2 text-gray-400 hover:text-white bg-gray-800 hover:bg-gray-700 rounded-md transition-colors"
-              title="Clear all messages"
+              className="p-2 text-gray-400 hover:text-white bg-white/5 hover:bg-white/10 rounded-lg transition-colors"
+              title="Clear conversation"
             >
               <Trash2 className="h-4 w-4" />
             </button>
             <button
               onClick={toggleSidebar}
-              className="p-2 text-gray-400 hover:text-white bg-gray-800 hover:bg-gray-700 rounded-md transition-colors md:hidden"
+              className="p-2 text-gray-400 hover:text-white bg-white/5 hover:bg-white/10 rounded-lg transition-colors md:hidden"
               title="Toggle sidebar"
             >
               {isSidebarOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
@@ -467,80 +517,85 @@ export function ResearchAssistantPage() {
         </div>
       </header>
 
-      <div className="flex flex-1 overflow-hidden">
-        {/* Sidebar - moved to left side */}
-        <div
-          className={`md:relative md:flex-shrink-0 h-full overflow-y-auto bg-gray-900 border-r border-gray-800 transform transition-transform duration-300 ease-in-out z-40 w-56 ${
-            isSidebarOpen ? 'fixed inset-y-14 left-0 translate-x-0' : 'fixed inset-y-14 left-0 -translate-x-full md:translate-x-0'
-          }`}
-        >
-          <div className="p-4 border-b border-gray-800">
-            <h3 className="text-sm font-medium text-white mb-2">Research Tools</h3>
+      {/* Main container with modern glass sidebar */}
+      <div className="flex flex-1 overflow-hidden" style={{ height: 'calc(100vh - 70px - 80px)' }}>
+        {/* Sidebar with frosted glass effect */}
+        <div className={`${
+          isSidebarOpen ? 'w-full md:w-80' : 'w-0'
+        } bg-[#0f1429]/95 backdrop-blur-xl border-r border-white/5 transition-all duration-300 overflow-hidden flex-shrink-0 h-full`}>
+          <div className="p-4 border-b border-white/5">
+            <h3 className="text-sm font-medium text-white mb-3 flex items-center">
+              <Layers className="w-4 h-4 mr-2 text-blue-400" />
+              Research Tools
+            </h3>
             <div className="space-y-2">
               <button 
                 onClick={handleMarketAnalysisClick}
-                className={`w-full flex items-center justify-between p-2 rounded-lg ${
+                className={`w-full flex items-center justify-between p-2.5 rounded-lg ${
                   activeSidebarSection === 'market-analysis' 
-                    ? 'bg-blue-600/10 text-blue-400 border border-blue-600/20 hover:bg-blue-600/20' 
-                    : 'bg-gray-800 text-gray-300 hover:bg-gray-750'
-                } transition-colors text-sm`}
+                    ? 'bg-blue-600/15 text-blue-400 border border-blue-500/20' 
+                    : 'bg-white/5 text-gray-300 hover:bg-white/10'
+                } transition-all duration-200 text-sm group`}
               >
                 <div className="flex items-center">
                   <BarChart4 className="h-4 w-4 mr-2" />
                   <span>Market Analysis</span>
                 </div>
-                <ChevronRight className="h-4 w-4" />
+                <ChevronRight className="h-4 w-4 opacity-50 group-hover:opacity-100 transition-opacity" />
               </button>
               
               <button 
                 onClick={handleResearchReportsClick}
-                className={`w-full flex items-center justify-between p-2 rounded-lg ${
+                className={`w-full flex items-center justify-between p-2.5 rounded-lg ${
                   activeSidebarSection === 'research-reports' 
-                    ? 'bg-blue-600/10 text-blue-400 border border-blue-600/20 hover:bg-blue-600/20' 
-                    : 'bg-gray-800 text-gray-300 hover:bg-gray-750'
-                } transition-colors text-sm`}
+                    ? 'bg-blue-600/15 text-blue-400 border border-blue-500/20' 
+                    : 'bg-white/5 text-gray-300 hover:bg-white/10'
+                } transition-all duration-200 text-sm group`}
               >
                 <div className="flex items-center">
                   <FileText className="h-4 w-4 mr-2" />
                   <span>Research Reports</span>
                 </div>
-                <ChevronRight className="h-4 w-4" />
+                <ChevronRight className="h-4 w-4 opacity-50 group-hover:opacity-100 transition-opacity" />
               </button>
               
               <button 
                 onClick={handlePortfolioInsightsClick}
-                className={`w-full flex items-center justify-between p-2 rounded-lg ${
+                className={`w-full flex items-center justify-between p-2.5 rounded-lg ${
                   activeSidebarSection === 'portfolio-insights' 
-                    ? 'bg-blue-600/10 text-blue-400 border border-blue-600/20 hover:bg-blue-600/20' 
-                    : 'bg-gray-800 text-gray-300 hover:bg-gray-750'
-                } transition-colors text-sm`}
+                    ? 'bg-blue-600/15 text-blue-400 border border-blue-500/20' 
+                    : 'bg-white/5 text-gray-300 hover:bg-white/10'
+                } transition-all duration-200 text-sm group`}
               >
                 <div className="flex items-center">
                   <Briefcase className="h-4 w-4 mr-2" />
                   <span>Portfolio Insights</span>
                 </div>
-                <ChevronRight className="h-4 w-4" />
+                <ChevronRight className="h-4 w-4 opacity-50 group-hover:opacity-100 transition-opacity" />
               </button>
               
               <button 
                 onClick={handleHelpResourcesClick}
-                className={`w-full flex items-center justify-between p-2 rounded-lg ${
+                className={`w-full flex items-center justify-between p-2.5 rounded-lg ${
                   activeSidebarSection === 'help-resources' 
-                    ? 'bg-blue-600/10 text-blue-400 border border-blue-600/20 hover:bg-blue-600/20' 
-                    : 'bg-gray-800 text-gray-300 hover:bg-gray-750'
-                } transition-colors text-sm`}
+                    ? 'bg-blue-600/15 text-blue-400 border border-blue-500/20' 
+                    : 'bg-white/5 text-gray-300 hover:bg-white/10'
+                } transition-all duration-200 text-sm group`}
               >
                 <div className="flex items-center">
                   <HelpCircle className="h-4 w-4 mr-2" />
                   <span>Help & Resources</span>
                 </div>
-                <ChevronRight className="h-4 w-4" />
+                <ChevronRight className="h-4 w-4 opacity-50 group-hover:opacity-100 transition-opacity" />
               </button>
             </div>
           </div>
           
           <div className="p-4">
-            <h3 className="text-sm font-medium text-white mb-2">Recent Topics</h3>
+            <h3 className="text-sm font-medium text-white mb-3 flex items-center">
+              <MessageCircle className="w-4 h-4 mr-2 text-blue-400" />
+              Recent Topics
+            </h3>
             <div className="space-y-2">
               {messages
                 .filter(m => m.type === 'user')
@@ -550,16 +605,15 @@ export function ResearchAssistantPage() {
                   <button
                     key={message.id}
                     onClick={() => handleSuggestedQuerySelect(message.content)}
-                    className="w-full text-left p-2 rounded-lg bg-gray-800 hover:bg-gray-750 text-gray-300 transition-colors text-xs truncate flex items-center group"
+                    className="w-full text-left p-2.5 rounded-lg bg-white/5 hover:bg-white/10 text-gray-300 transition-all duration-200 text-xs truncate flex items-center group"
                   >
-                    <MessageCircle className="h-3 w-3 mr-2 flex-shrink-0 text-gray-500 group-hover:text-blue-400" />
+                    <Clock className="h-3 w-3 mr-2 flex-shrink-0 text-gray-500 group-hover:text-blue-400" />
                     <span className="truncate">{message.content}</span>
                   </button>
                 ))}
               
-              {/* Show a message if there are no recent topics */}
               {messages.filter(m => m.type === 'user').length === 0 && (
-                <div className="text-xs text-gray-500 p-2">
+                <div className="text-xs text-gray-500 p-2.5 bg-white/5 rounded-lg">
                   No recent topics. Start a conversation to see your history here.
                 </div>
               )}
@@ -567,36 +621,40 @@ export function ResearchAssistantPage() {
           </div>
         </div>
         
-        {/* Main chat area */}
-        <div className="flex-1 flex flex-col h-full relative">
-          {/* Messages */}
+        {/* Main chat area with modern styling */}
+        <div className="flex-1 flex flex-col h-full relative overflow-hidden">
+          {/* Messages area with subtle gradient */}
           <div
             ref={chatContainerRef}
-            className="flex-1 overflow-y-auto px-3 md:px-4 py-4 space-y-3 bg-gradient-to-b from-gray-900 to-gray-950"
+            className="flex-1 overflow-y-auto px-4 md:px-6 py-6 space-y-6 bg-gradient-to-b from-[#0a0f1d] to-[#0d1326]"
+            style={{ 
+              overscrollBehavior: 'contain'
+            }}
           >
             {messages.length === 0 ? (
-              <div className="flex flex-col items-center justify-center h-full text-center">
-                <div className="bg-gradient-to-r from-blue-600 to-blue-700 p-3 rounded-full mb-3 shadow-lg shadow-blue-500/20">
-                  <Bot className="w-8 h-8 text-white" />
+              <div className="flex flex-col items-center justify-center h-full text-center px-4">
+                <div className="bg-gradient-to-br from-blue-600 to-indigo-600 p-4 rounded-2xl mb-6 shadow-lg shadow-blue-500/20">
+                  <Bot className="w-10 h-10 text-white" />
                 </div>
-                <h2 className="text-xl font-bold text-white mb-2">Research Assistant</h2>
-                <p className="text-gray-400 max-w-md mb-4 text-base">
-                  Your AI-powered financial research companion
+                <h2 className="text-2xl font-bold text-white mb-3">Professional Research Assistant</h2>
+                <p className="text-gray-400 max-w-md mb-8 text-base leading-relaxed">
+                  Your AI-powered financial research companion. Get instant insights, analysis, and recommendations tailored to your investment needs.
                 </p>
                 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-4xl w-full">
-                  {getCategorySuggestedQueries().map((query, index) => (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 max-w-4xl w-full">
+                  {SUGGESTED_PROMPTS.map((prompt, index) => (
                     <button
                       key={index}
-                      onClick={() => handleSuggestedQuerySelect(query.text)}
-                      className="bg-gradient-to-br from-gray-800 to-gray-900 hover:from-gray-750 hover:to-gray-850 text-gray-200 p-3 rounded-lg text-sm text-left transition-all duration-200 border border-gray-700/50 hover:border-gray-600 shadow-md hover:shadow-lg group"
+                      onClick={() => handleSuggestedQuerySelect(prompt.text)}
+                      className="bg-[#0f1429] hover:bg-[#131a35] text-gray-200 p-4 rounded-xl text-sm text-left transition-all duration-200 border border-white/5 hover:border-blue-500/20 shadow-lg hover:shadow-xl group"
                     >
                       <div className="flex items-start">
-                        <div className="bg-blue-500/20 p-2 rounded-lg mr-3">
-                          {query.icon && <query.icon className="h-4 w-4 text-blue-400" />}
+                        <div className="bg-blue-600/10 p-2 rounded-lg mr-3">
+                          {prompt.icon && <prompt.icon className="h-5 w-5 text-blue-400" />}
                         </div>
                         <div className="flex-1">
-                          <p className="font-medium">{query.text}</p>
+                          <p className="text-xs text-blue-400 mb-1">{prompt.category}</p>
+                          <p className="font-medium leading-relaxed">{prompt.text}</p>
                         </div>
                       </div>
                     </button>
@@ -614,36 +672,36 @@ export function ResearchAssistantPage() {
                   <div
                     key={message.id}
                     className={`flex ${
-                      message.type === 'user' ? 'justify-end mb-3' : 'justify-start mb-3'
+                      message.type === 'user' ? 'justify-end mb-4' : 'justify-start mb-4'
                     } ${index === messages.length - 1 && message.type === 'assistant' ? 'animate-fadeIn' : ''} ${
                       message.id === 'welcome' ? 'welcome-message mt-6' : ''
                     }`}
                   >
                     {message.type === 'assistant' && (
-                      <div className="flex-shrink-0 mr-2">
-                        <div className="bg-gradient-to-br from-blue-600 to-blue-700 w-8 h-8 rounded-full flex items-center justify-center shadow-md">
-                          <Bot className="h-4 w-4 text-white" />
+                      <div className="flex-shrink-0 mr-3">
+                        <div className="bg-gradient-to-br from-blue-600 to-indigo-600 w-10 h-10 rounded-xl flex items-center justify-center shadow-lg">
+                          <Bot className="h-5 w-5 text-white" />
                         </div>
                       </div>
                     )}
                     
                     <div className={`max-w-[85%] ${message.type === 'user' ? 'order-1' : 'order-2'}`}>
-                      <div className={`rounded-lg px-4 py-3 shadow-md ${
+                      <div className={`rounded-xl px-5 py-4 shadow-lg ${
                         message.type === 'user'
-                          ? 'bg-gradient-to-r from-blue-600 to-blue-700 text-white'
-                          : 'bg-gradient-to-br from-gray-800 to-gray-850 text-gray-200 border border-gray-700/50'
+                          ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white'
+                          : 'bg-[#0f1429]/95 backdrop-blur-xl text-gray-200 border border-white/5'
                       }`}>
                         {/* Message header with sender info */}
-                        <div className="flex items-center justify-between mb-1">
-                          <div className="flex items-center">
-                            <span className="text-sm font-medium opacity-90">
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm font-medium">
                               {message.type === 'user' ? 'You' : 'Research Assistant'}
                             </span>
                             
                             {message.useStocksContext && message.type === 'assistant' && (
-                              <span className="bg-green-600/20 text-green-400 text-xs font-medium px-2 py-0.5 rounded-full ml-2 flex items-center">
+                              <span className="bg-blue-500/10 text-blue-400 text-xs font-medium px-2 py-0.5 rounded-full border border-blue-500/20 flex items-center">
                                 <Briefcase className="h-3 w-3 mr-1" />
-                                Portfolio
+                                Portfolio Context
                               </span>
                             )}
                           </div>
@@ -657,7 +715,7 @@ export function ResearchAssistantPage() {
                         </div>
                         
                         {/* Message content with markdown support */}
-                        <div className="prose prose-invert prose-sm max-w-none prose-p:my-1 prose-headings:my-2 prose-li:my-1">
+                        <div className="prose prose-invert prose-sm max-w-none prose-p:my-1.5 prose-headings:my-3 prose-li:my-1">
                           {message.type === 'assistant' ? (
                             <ReactMarkdown>{message.content}</ReactMarkdown>
                           ) : (
@@ -668,23 +726,27 @@ export function ResearchAssistantPage() {
                       
                       {/* Message actions */}
                       {message.type === 'assistant' && (
-                        <div className="flex items-center justify-start mt-1 space-x-2">
-                          <button className="text-xs text-gray-500 hover:text-gray-300 flex items-center">
-                            <Paperclip className="h-3 w-3 mr-1" />
+                        <div className="flex items-center justify-start mt-2 space-x-3">
+                          <button className="text-xs text-gray-500 hover:text-white flex items-center gap-1.5 bg-white/5 hover:bg-white/10 px-2 py-1 rounded-lg transition-all duration-200">
+                            <Paperclip className="h-3 w-3" />
                             Copy
                           </button>
-                          <button className="text-xs text-gray-500 hover:text-gray-300 flex items-center">
-                            <BookOpen className="h-3 w-3 mr-1" />
+                          <button className="text-xs text-gray-500 hover:text-white flex items-center gap-1.5 bg-white/5 hover:bg-white/10 px-2 py-1 rounded-lg transition-all duration-200">
+                            <BookOpen className="h-3 w-3" />
                             Expand
+                          </button>
+                          <button className="text-xs text-gray-500 hover:text-white flex items-center gap-1.5 bg-white/5 hover:bg-white/10 px-2 py-1 rounded-lg transition-all duration-200">
+                            <Share2 className="h-3 w-3" />
+                            Share
                           </button>
                         </div>
                       )}
                     </div>
                     
                     {message.type === 'user' && (
-                      <div className="flex-shrink-0 ml-2 order-2">
-                        <div className="bg-blue-500/20 w-8 h-8 rounded-full flex items-center justify-center border border-blue-500/30">
-                          <User className="h-4 w-4 text-blue-400" />
+                      <div className="flex-shrink-0 ml-3 order-2">
+                        <div className="bg-blue-500/10 w-10 h-10 rounded-xl flex items-center justify-center border border-blue-500/20">
+                          <User className="h-5 w-5 text-blue-400" />
                         </div>
                       </div>
                     )}
@@ -695,33 +757,35 @@ export function ResearchAssistantPage() {
             )}
           </div>
 
-          {/* Input Area - with proper height */}
-          <div className="border-t border-gray-800 bg-gray-900 p-3 flex-shrink-0">
+          {/* Modern input area with glass effect */}
+          <div className="border-t border-white/5 bg-[#0f1429]/95 backdrop-blur-xl p-4 md:p-6">
             <div className="max-w-4xl mx-auto">
-              <div className="flex items-center justify-between mb-2">
-                <div className="flex items-center">
-                  <div className="flex items-center mr-4">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-4">
+                  <div 
+                    className="flex items-center gap-2 py-1.5 px-3 rounded-lg bg-white/5 hover:bg-white/10 transition-colors cursor-pointer"
+                    onClick={() => setUseStocksContext(!useStocksContext)}
+                  >
+                    <Briefcase className={`w-4 h-4 ${useStocksContext ? 'text-blue-400' : 'text-gray-400'}`} />
+                    <span className={`text-sm ${useStocksContext ? 'text-blue-400' : 'text-gray-400'}`}>
+                      Portfolio Context
+                    </span>
                     <MinimalToggle
                       checked={useStocksContext}
                       onChange={(e) => setUseStocksContext(e.target.checked)}
-                      className="mr-2 scale-100 transform origin-left"
+                      className="ml-2"
                     />
-                    <span className="text-sm text-gray-400 flex items-center">
-                      <Briefcase className="h-4 w-4 mr-1 text-blue-400" />
-                      Use Portfolio Context
-                    </span>
                   </div>
                   
                   {portfolio.length > 0 && useStocksContext && (
-                    <div className="text-sm text-gray-500">
-                      <span className="mr-1">Portfolio:</span>
+                    <div className="hidden md:flex items-center gap-2">
                       {portfolio.slice(0, 3).map((symbol, i) => (
-                        <span key={symbol} className="bg-gray-800 text-gray-300 px-2 py-0.5 rounded mr-1">
+                        <span key={symbol} className="px-2 py-1 rounded-lg bg-white/5 text-gray-300 text-sm">
                           {symbol}
                         </span>
                       ))}
                       {portfolio.length > 3 && (
-                        <span className="text-gray-500">+{portfolio.length - 3} more</span>
+                        <span className="text-gray-500 text-sm">+{portfolio.length - 3}</span>
                       )}
                     </div>
                   )}
@@ -739,18 +803,18 @@ export function ResearchAssistantPage() {
                       ? "Ask about your portfolio, market trends, or investment strategies..."
                       : "Ask about stocks, market analysis, or investment advice..."
                   }
-                  className="min-h-[45px] max-h-[120px] bg-gray-800 border-gray-700 text-white rounded-lg px-4 py-3 focus:ring-1 focus:ring-blue-500 focus:border-transparent resize-none text-sm placeholder:text-gray-500"
+                  className="min-h-[50px] max-h-[120px] bg-white/5 border-white/10 text-white rounded-xl px-4 py-3.5 focus:ring-2 focus:ring-blue-500/50 focus:border-transparent resize-none text-sm placeholder:text-gray-500"
                 />
                 
                 <div className="absolute right-3 bottom-3 flex items-center gap-2">
                   <button
                     onClick={handleSendMessage}
                     disabled={!inputValue.trim() || isLoading}
-                    className={`p-2 rounded-lg ${
+                    className={`p-2.5 rounded-lg ${
                       inputValue.trim() && !isLoading
-                        ? 'bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white'
-                        : 'bg-gray-700 text-gray-400 cursor-not-allowed'
-                    } transition-all duration-200 flex items-center justify-center shadow-md`}
+                        ? 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg'
+                        : 'bg-white/5 text-gray-400 cursor-not-allowed'
+                    } transition-all duration-200 flex items-center justify-center`}
                   >
                     {isLoading ? (
                       <RefreshCw className="h-4 w-4 animate-spin" />
@@ -761,74 +825,23 @@ export function ResearchAssistantPage() {
                 </div>
               </div>
               
-              <div className="mt-1 text-xs text-gray-500 flex items-center justify-between">
+              <div className="mt-2 flex items-center justify-between text-xs text-gray-500">
                 <div className="flex items-center">
                   <Info className="h-3 w-3 mr-1" />
                   <span>Press Enter to send, Shift+Enter for new line</span>
                 </div>
                 
-                <div className="flex items-center">
-                  <Sparkles className="h-3 w-3 mr-1 text-blue-400" />
-                  <span>Powered by AI</span>
+                <div className="flex items-center gap-3">
+                  <span className="flex items-center">
+                    <Clock className="h-3 w-3 mr-1" />
+                    Response time: ~2s
+                  </span>
+                  <span className="flex items-center">
+                    <Sparkles className="h-3 w-3 mr-1 text-blue-400" />
+                    AI Powered
+                  </span>
                 </div>
               </div>
-              
-              {/* Suggested Prompts */}
-              {messages.length > 0 && (
-                <div className="mt-2 pt-2 border-t border-gray-800">
-                  <div className="flex items-center justify-between mb-2">
-                    <h4 className="text-sm font-medium text-gray-400 flex items-center">
-                      <Lightbulb className="h-4 w-4 mr-1 text-blue-400" />
-                      Suggested Prompts
-                    </h4>
-                    
-                    {/* Category selector */}
-                    <div className="flex items-center space-x-1">
-                      <button 
-                        onClick={() => setActiveSidebarSection('market-analysis')}
-                        className={`p-1 rounded-md ${activeSidebarSection === 'market-analysis' ? 'bg-blue-600/20 text-blue-400' : 'text-gray-500 hover:text-gray-300'}`}
-                        title="Market Analysis"
-                      >
-                        <BarChart4 className="h-3.5 w-3.5" />
-                      </button>
-                      <button 
-                        onClick={() => setActiveSidebarSection('research-reports')}
-                        className={`p-1 rounded-md ${activeSidebarSection === 'research-reports' ? 'bg-blue-600/20 text-blue-400' : 'text-gray-500 hover:text-gray-300'}`}
-                        title="Research Reports"
-                      >
-                        <FileText className="h-3.5 w-3.5" />
-                      </button>
-                      <button 
-                        onClick={() => setActiveSidebarSection('portfolio-insights')}
-                        className={`p-1 rounded-md ${activeSidebarSection === 'portfolio-insights' ? 'bg-blue-600/20 text-blue-400' : 'text-gray-500 hover:text-gray-300'}`}
-                        title="Portfolio Insights"
-                      >
-                        <Briefcase className="h-3.5 w-3.5" />
-                      </button>
-                      <button 
-                        onClick={() => setActiveSidebarSection('help-resources')}
-                        className={`p-1 rounded-md ${activeSidebarSection === 'help-resources' ? 'bg-blue-600/20 text-blue-400' : 'text-gray-500 hover:text-gray-300'}`}
-                        title="Help & Resources"
-                      >
-                        <HelpCircle className="h-3.5 w-3.5" />
-                      </button>
-                    </div>
-                  </div>
-                  
-                  <div className="flex flex-wrap gap-2 overflow-x-auto">
-                    {getCategorySuggestedQueries().slice(0, 4).map((query, index) => (
-                      <button
-                        key={index}
-                        onClick={() => handleSuggestedQuerySelect(query.text)}
-                        className="bg-gray-800 hover:bg-gray-750 text-gray-300 text-sm px-3 py-2 rounded-lg transition-colors flex items-center flex-shrink-0"
-                      >
-                        {query.icon && <query.icon className="h-4 w-4 mr-2 text-blue-400" />}
-                        <span className="truncate max-w-[180px]">{query.text}</span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
             </div>
           </div>
         </div>

@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/ico" href="/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Tennant Ticker</title>
+    <style>
+      /* Ensure the body has a dark background by default */
+      body {
+        background-color: #111827;
+        color: white;
+        margin: 0;
+        padding: 0;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+      }
+      #root {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+      }
+      /* Loading state */
+      .loading {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+        height: 100vh;
+        width: 100vw;
+        background-color: #111827;
+        color: white;
+        font-family: system-ui, -apple-system, sans-serif;
+      }
+      .loading-spinner {
+        width: 50px;
+        height: 50px;
+        border: 3px solid #3b82f6;
+        border-radius: 50%;
+        border-top-color: transparent;
+        animation: spin 1s linear infinite;
+        margin-bottom: 20px;
+      }
+      .loading-text {
+        font-size: 18px;
+        margin-top: 10px;
+      }
+      .fallback-content {
+        display: none;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        width: 100vw;
+        background-color: #111827;
+        color: white;
+        font-family: system-ui, -apple-system, sans-serif;
+        text-align: center;
+        padding: 0 20px;
+      }
+      .fallback-content h1 {
+        color: #3b82f6;
+        margin-bottom: 20px;
+      }
+      .fallback-content p {
+        margin-bottom: 30px;
+        max-width: 600px;
+        line-height: 1.6;
+      }
+      .fallback-button {
+        background: #3b82f6;
+        color: white;
+        border: none;
+        padding: 12px 24px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 16px;
+        transition: background-color 0.2s;
+      }
+      .fallback-button:hover {
+        background-color: #2563eb;
+      }
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+      
+      /* Search input styles */
+      .search-input {
+        width: 100%;
+        padding: 8px 16px 8px 36px;
+        background-color: rgba(17, 24, 39, 0.5);
+        border: 1px solid rgba(59, 130, 246, 0.3);
+        border-radius: 9999px;
+        color: white;
+        font-size: 16px;
+        outline: none;
+      }
+      
+      .search-input:focus {
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3);
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root">
+      <div id="loading-indicator" class="loading">
+        <div class="loading-spinner"></div>
+        <div class="loading-text">Loading Tennant Ticker...</div>
+      </div>
+    </div>
+    
+    <!-- Fallback content if app doesn't load -->
+    <div id="fallback-content" class="fallback-content">
+      <h1>Tennant Ticker</h1>
+      <p>
+        It seems the application is taking longer than expected to load. 
+        This could be due to network issues or server maintenance.
+      </p>
+      <p>
+        You can try refreshing the page or check back later.
+      </p>
+      <button class="fallback-button" onclick="window.location.reload()">
+        Refresh Page
+      </button>
+    </div>
+    
+    <script>
+      // Global definitions to prevent errors
+      window.__REACT_APP_RENDERED = false;
+      let appLoaded = false;
+      
+      // Ultra-simple loading handler that won't cause any React conflicts
+      window.markAppLoaded = function() {
+        if (appLoaded) return;
+        appLoaded = true;
+        
+        const loadingIndicator = document.getElementById('loading-indicator');
+        if (loadingIndicator && loadingIndicator.parentNode) {
+          loadingIndicator.parentNode.removeChild(loadingIndicator);
+        }
+      };
+      
+      // Simple fallback if React doesn't load
+      setTimeout(function() {
+        if (!appLoaded && !window.__REACT_APP_RENDERED) {
+          console.log('Application load timeout - showing fallback UI');
+          const fallback = document.getElementById('fallback-content');
+          if (fallback) {
+            fallback.style.display = 'flex';
+          }
+        }
+      }, 30000); // 30 seconds timeout
+    </script>
+    
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html> 

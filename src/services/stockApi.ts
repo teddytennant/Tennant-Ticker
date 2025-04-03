@@ -1,166 +1,99 @@
-import axios from 'axios';
-import axiosRetry from 'axios-retry';
-import { NewsItem, StockQuote } from '../types';
-import toast from 'react-hot-toast';
+import { getQuote, getHistoricalData, getCompanyInfo } from './yfinanceApi';
+import { toast } from 'react-hot-toast';
 
-const FINNHUB_API_KEY = import.meta.env.VITE_FINNHUB_API_KEY;
-const BASE_URL = 'https://finnhub.io/api/v1';
+export interface StockData {
+  symbol: string;
+  name: string;
+  price: number;
+  change: number;
+  changePercent: number;
+  volume: number;
+  marketCap?: number;
+  open?: number;
+  high?: number;
+  low?: number;
+  previousClose?: number;
+}
 
-// Create an axios instance with retry capability
-const client = axios.create();
-axiosRetry(client, { 
-  retries: 2,
-  retryDelay: (retryCount) => retryCount * 1000,
-  retryCondition: (error) => {
-    return axiosRetry.isNetworkOrIdempotentRequestError(error) ||
-           error.response?.status === 429;
-  }
-});
+export interface HistoricalDataPoint {
+  date: string;
+  open: number;
+  high: number;
+  low: number;
+  close: number;
+  volume: number;
+  adjustedClose?: number;
+}
 
-const handleApiLimitError = () => {
-  toast.error(
-    'API rate limit reached. Please try again shortly.',
-    { duration: 5000 }
-  );
-};
-
-async function getYahooFinanceData(symbol: string): Promise<number> {
+export async function getStockQuote(symbol: string): Promise<StockData | null> {
   try {
-    const response = await axios.get(`https://query1.finance.yahoo.com/v8/finance/chart/${symbol}`, {
-      params: {
-        interval: '1d',
-        range: '1d'
-      }
-    });
-
-    console.log(`Yahoo Finance data for ${symbol}:`, response.data);
-
-    if (response.data?.chart?.result?.[0]?.indicators?.quote?.[0]?.volume?.[0]) {
-      return response.data.chart.result[0].indicators.quote[0].volume[0];
+    const quote = await getQuote(symbol);
+    if (!quote) {
+      throw new Error('No quote data available');
     }
-    return 0;
+
+    return {
+      symbol: quote.symbol,
+      name: quote.shortName,
+      price: quote.regularMarketPrice,
+      change: quote.regularMarketChange,
+      changePercent: quote.regularMarketChangePercent,
+      volume: quote.regularMarketVolume,
+      marketCap: quote.marketCap,
+      open: quote.regularMarketOpen,
+      high: quote.regularMarketDayHigh,
+      low: quote.regularMarketDayLow,
+      previousClose: quote.regularMarketPreviousClose
+    };
   } catch (error) {
-    console.error('Error fetching Yahoo Finance data:', error);
-    return 0;
+    console.error('Error fetching stock quote:', error);
+    toast.error('Failed to fetch stock quote');
+    return null;
   }
 }
 
-export async function getStockQuote(symbol: string): Promise<StockQuote | null> {
-  if (!FINNHUB_API_KEY) {
-    toast.error('API key is not configured');
-    throw new Error('API key is not configured');
-  }
-
+export async function getHistoricalData(symbol: string, timeframe: '1d' | '1w' | '1m' | '3m' | '1y' = '1m'): Promise<HistoricalDataPoint[]> {
   try {
-    // Try to get data from both Finnhub and Yahoo Finance
-    const [quoteResponse, yahooVolume] = await Promise.all([
-      client.get(`${BASE_URL}/quote`, {
-        params: {
-          symbol,
-          token: FINNHUB_API_KEY,
-        },
-      }),
-      getYahooFinanceData(symbol)
-    ]);
-
-    if (!quoteResponse.data || typeof quoteResponse.data.c !== 'number') {
-      toast.error(`No data available for ${symbol}. Please verify the symbol.`);
-      return null;
-    }
-
-    // Log the data sources
-    console.log(`Quote data for ${symbol}:`, quoteResponse.data);
-    console.log(`Yahoo Finance volume for ${symbol}:`, yahooVolume);
-
-    return {
-      price: quoteResponse.data.c || 0,
-      change: quoteResponse.data.d || 0,
-      changePercent: quoteResponse.data.dp || 0,
-      volume: yahooVolume || quoteResponse.data.v || 0,
+    // Convert timeframe to yfinance period format
+    const periodMap = {
+      '1d': '1d',
+      '1w': '5d',
+      '1m': '1mo',
+      '3m': '3mo',
+      '1y': '1y'
     };
-  } catch (error) {
-    if (axios.isAxiosError(error)) {
-      if (error.response?.status === 429) {
-        handleApiLimitError();
-      } else if (error.response?.status === 403) {
-        toast.error('Invalid API key. Please check your configuration.');
-      } else {
-        toast.error(`Error fetching data for ${symbol}. Please try again later.`);
-      }
-      console.error('API Error:', {
-        status: error.response?.status,
-        data: error.response?.data,
-        message: error.message
-      });
-    } else {
-      console.error('Unexpected error:', error);
-      toast.error(`Unexpected error while fetching ${symbol}`);
+
+    const data = await getHistoricalData(symbol, periodMap[timeframe]);
+    if (!data || data.length === 0) {
+      throw new Error('No historical data available');
     }
-    throw error;
+
+    return data.map(point => ({
+      date: point.Date,
+      open: point.Open,
+      high: point.High,
+      low: point.Low,
+      close: point.Close,
+      volume: point.Volume,
+      adjustedClose: point['Adj Close']
+    }));
+  } catch (error) {
+    console.error('Error fetching historical data:', error);
+    toast.error('Failed to fetch historical data');
+    return [];
   }
 }
 
 export async function getCompanyOverview(symbol: string) {
-  if (!FINNHUB_API_KEY) {
-    toast.error('API key is not configured');
-    return null;
-  }
-
   try {
-    const [basicResponse, metricsResponse] = await Promise.all([
-      client.get(`${BASE_URL}/stock/profile2`, {
-        params: {
-          symbol,
-          token: FINNHUB_API_KEY,
-        },
-      }),
-      client.get(`${BASE_URL}/stock/metric`, {
-        params: {
-          symbol,
-          metric: 'all',
-          token: FINNHUB_API_KEY,
-        },
-      }),
-    ]);
-
-    const basicData = basicResponse.data;
-    const metricsData = metricsResponse.data?.metric;
-
-    console.log(`Metrics data for ${symbol}:`, {
-      basic: basicData,
-      metrics: metricsData,
-      peMetrics: {
-        peBasicExclExtraTTM: metricsData?.peBasicExclExtraTTM,
-        peExclExtraAnnual: metricsData?.peExclExtraAnnual,
-        peBasicExclExtraAnnual: metricsData?.peBasicExclExtraAnnual,
-        peInclExtraTTM: metricsData?.peInclExtraTTM
-      }
-    });
-
-    if (!basicData || !metricsData) {
-      return null;
+    const info = await getCompanyInfo(symbol);
+    if (!info) {
+      throw new Error('No company information available');
     }
-
-    return {
-      marketCap: String(basicData.marketCapitalization * 1000000 || 0), // Convert to actual value from millions
-      peRatio: metricsData.peBasicExclExtraTTM || 
-               metricsData.peExclExtraAnnual || 
-               metricsData.peBasicExclExtraAnnual ||
-               metricsData.peInclExtraTTM ||
-               3.83, // Hardcoded value for HG as fallback
-      avgVolume: Math.round(metricsData['10DayAverageTradingVolume'] * 1000000) || 
-                Math.round(metricsData['3MonthAverageTradingVolume'] * 1000000) || 
-                Math.round(metricsData['yearAverageVolume'] * 1000000) || 0,
-      volume: Math.round(metricsData.lastDayVolume * 1000000) || 0, // Add current day volume
-      name: basicData.name || '', // Add company name
-    };
+    return info;
   } catch (error) {
-    if (axios.isAxiosError(error)) {
-      if (error.response?.status === 429) {
-        handleApiLimitError();
-      }
-    }
-    console.error('Company Overview API Error:', error);
+    console.error('Error fetching company overview:', error);
+    toast.error('Failed to fetch company information');
     return null;
   }
 }

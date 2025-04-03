@@ -1,8 +1,14 @@
 import axios from 'axios';
+import {
+  getQuote,
+  getHistoricalData,
+  getCompanyInfo,
+  getTopMovers as getYFTopMovers,
+  getMarketIndices as getYFMarketIndices,
+  getSectorPerformance as getYFSectorPerformance
+} from './yfinanceApi';
 
-const ALPHA_VANTAGE_API_KEY = import.meta.env.VITE_ALPHA_VANTAGE_API_KEY;
 const NEWS_API_KEY = import.meta.env.VITE_NEWS_API_KEY;
-const ALPHA_VANTAGE_BASE_URL = 'https://www.alphavantage.co/query';
 const NEWS_API_BASE_URL = 'https://newsapi.org/v2';
 
 export interface MarketData {
@@ -99,173 +105,100 @@ const MOCK_TOP_MOVERS: MarketData[] = [
   },
 ];
 
-// Simulate some random price movements
-function addRandomPriceMovement(data: MarketData[]): MarketData[] {
-  return data.map(item => {
-    const randomChange = (Math.random() - 0.5) * 2; // Random number between -1 and 1
-    const newPrice = item.price * (1 + randomChange / 100);
-    const change = newPrice - item.price;
-    return {
-      ...item,
-      price: newPrice,
-      change,
-      changePercent: (change / item.price) * 100,
-    };
-  });
-}
-
 export async function getTopMovers(): Promise<MarketData[]> {
   try {
     console.log('Fetching top movers data...');
-    const movers: MarketData[] = [];
+    const movers = await getYFTopMovers();
     
-    // Get data for major stocks from Alpha Vantage
-    for (const symbol of MAJOR_STOCKS.slice(0, 4)) { // Limit to 4 stocks to avoid rate limits
-      try {
-        const response = await axios.get(ALPHA_VANTAGE_BASE_URL, {
-          params: {
-            function: 'GLOBAL_QUOTE',
-            symbol,
-            apikey: ALPHA_VANTAGE_API_KEY
-          }
-        });
-
-        const quote = response.data['Global Quote'];
-        if (quote) {
-          movers.push({
-            symbol,
-            name: getCompanyName(symbol), // Use our company name mapping
-            price: parseFloat(quote['05. price']),
-            change: parseFloat(quote['09. change']),
-            changePercent: parseFloat(quote['10. change percent'].replace('%', '')),
-            volume: parseInt(quote['06. volume'])
-          });
-          console.log(`Successfully fetched data for ${symbol}`);
-        } else {
-          console.error(`No quote data for ${symbol}:`, response.data);
-        }
-      } catch (error) {
-        console.error(`Error fetching data for ${symbol}:`, error);
-      }
-
-      // Add delay to avoid hitting rate limits
-      await new Promise(resolve => setTimeout(resolve, 1000));
-    }
-
     if (movers.length > 0) {
       console.log(`Successfully fetched ${movers.length} top movers`);
-      return movers.sort((a, b) => Math.abs(b.changePercent) - Math.abs(a.changePercent));
+      return movers;
     } else {
       console.log('No top movers data from API, using mock data');
-      return MOCK_TOP_MOVERS; // Fallback to mock data if no results
+      return MOCK_TOP_MOVERS;
     }
   } catch (error) {
     console.error('Error fetching top movers:', error);
     console.log('Using mock top movers data due to error');
-    return MOCK_TOP_MOVERS; // Always fallback to mock data if API fails
+    return MOCK_TOP_MOVERS;
   }
 }
 
 export async function getMarketIndices(): Promise<MarketData[]> {
   try {
     console.log('Fetching market indices data...');
-    const indices = ['SPY', 'QQQ', 'DIA', 'IWM'];
-    const marketIndices: MarketData[] = [];
-
-    for (const symbol of indices) {
-      try {
-        const response = await axios.get(ALPHA_VANTAGE_BASE_URL, {
-          params: {
-            function: 'GLOBAL_QUOTE',
-            symbol,
-            apikey: ALPHA_VANTAGE_API_KEY
-          }
-        });
-
-        const quote = response.data['Global Quote'];
-        if (quote) {
-          marketIndices.push({
-            symbol,
-            name: getIndexName(symbol),
-            price: parseFloat(quote['05. price']),
-            change: parseFloat(quote['09. change']),
-            changePercent: parseFloat(quote['10. change percent'].replace('%', ''))
-          });
-          console.log(`Successfully fetched data for ${symbol} (${getIndexName(symbol)})`);
-        } else {
-          console.error(`No quote data for ${symbol}:`, response.data);
-        }
-      } catch (error) {
-        console.error(`Error fetching data for ${symbol}:`, error);
-      }
-
-      // Add delay to avoid hitting rate limits
-      await new Promise(resolve => setTimeout(resolve, 1000));
-    }
-
-    if (marketIndices.length > 0) {
-      console.log(`Successfully fetched ${marketIndices.length} market indices`);
-      return marketIndices;
+    const indices = await getYFMarketIndices();
+    
+    if (indices.length > 0) {
+      console.log(`Successfully fetched ${indices.length} market indices`);
+      return indices;
     } else {
       console.log('No market indices data from API, using mock data');
-      return MOCK_INDICES; // Fallback to mock data if no results
+      return MOCK_INDICES;
     }
   } catch (error) {
     console.error('Error fetching market indices:', error);
     console.log('Using mock market indices data due to error');
-    return MOCK_INDICES; // Always fallback to mock data if API fails
+    return MOCK_INDICES;
   }
 }
 
-export interface SectorPerformance {
-  sector: string;
-  performance: number;
-  lastUpdated: string;
-}
-
-export async function getSectorPerformance(): Promise<SectorPerformance[]> {
+export async function getSectorPerformance(): Promise<any[]> {
   try {
-    const response = await axios.get(ALPHA_VANTAGE_BASE_URL, {
-      params: {
-        function: 'SECTOR',
-        apikey: ALPHA_VANTAGE_API_KEY
-      }
-    });
-
-    const data = response.data;
-    if (!data || !data['Rank A: Real-Time Performance']) {
-      throw new Error('Invalid sector performance data');
+    const performance = await getYFSectorPerformance();
+    if (performance.length > 0) {
+      return performance;
     }
-
-    const sectors = data['Rank A: Real-Time Performance'];
-    const performances: SectorPerformance[] = Object.entries(sectors)
-      .filter(([key]) => key !== 'Last Refreshed')
-      .map(([sector, performance]: [string, any]) => ({
-        sector,
-        performance: parseFloat(String(performance).replace('%', '')),
-        lastUpdated: new Date().toISOString()
-      }));
-
-    return performances.sort((a, b) => b.performance - a.performance);
+    throw new Error('No sector performance data available');
   } catch (error) {
     console.error('Error fetching sector performance:', error);
     return [];
   }
 }
 
+// Helper function to get company name from symbol
+function getCompanyName(symbol: string): string {
+  const companies: { [key: string]: string } = {
+    'AAPL': 'Apple Inc.',
+    'MSFT': 'Microsoft Corporation',
+    'GOOGL': 'Alphabet Inc.',
+    'AMZN': 'Amazon.com Inc.',
+    'META': 'Meta Platforms Inc.',
+    'NVDA': 'NVIDIA Corporation',
+    'TSLA': 'Tesla, Inc.',
+    'JPM': 'JPMorgan Chase & Co.',
+    'V': 'Visa Inc.',
+    'WMT': 'Walmart Inc.',
+    'UNH': 'UnitedHealth Group Inc.',
+    'JNJ': 'Johnson & Johnson',
+    'XOM': 'Exxon Mobil Corporation',
+    'BAC': 'Bank of America Corp.',
+    'PG': 'Procter & Gamble Co.',
+    'MA': 'Mastercard Inc.',
+    'HD': 'The Home Depot Inc.',
+    'CVX': 'Chevron Corporation',
+    'ABBV': 'AbbVie Inc.',
+    'PFE': 'Pfizer Inc.',
+    'AVGO': 'Broadcom Inc.',
+    'KO': 'The Coca-Cola Co.',
+    'PEP': 'PepsiCo Inc.',
+    'MRK': 'Merck & Co. Inc.',
+    'COST': 'Costco Wholesale Corporation'
+  };
+  
+  return companies[symbol] || symbol;
+}
+
+// Helper function to get index name from symbol
 function getIndexName(symbol: string): string {
-  switch (symbol) {
-    case 'SPY':
-      return 'S&P 500';
-    case 'QQQ':
-      return 'NASDAQ 100';
-    case 'DIA':
-      return 'Dow Jones';
-    case 'IWM':
-      return 'Russell 2000';
-    default:
-      return symbol;
-  }
+  const indices: { [key: string]: string } = {
+    'SPY': 'S&P 500',
+    'QQQ': 'NASDAQ',
+    'DIA': 'Dow Jones',
+    'IWM': 'Russell 2000'
+  };
+  
+  return indices[symbol] || symbol;
 }
 
 export interface NewsItem {
@@ -279,6 +212,9 @@ export interface NewsItem {
   related: string;
   image?: string;
 }
+
+// Track if we've already shown an error message for market news
+let marketNewsErrorShown = false;
 
 export async function getMarketNews(category: string = 'general'): Promise<NewsItem[]> {
   try {
@@ -338,38 +274,59 @@ export async function getMarketNews(category: string = 'general'): Promise<NewsI
       .sort((a: NewsItem, b: NewsItem) => b.datetime - a.datetime);
   } catch (error) {
     console.error('Error fetching market news:', error);
-    throw new Error('Failed to fetch market news');
+    
+    // Only show the error message once
+    if (!marketNewsErrorShown) {
+      // Check if it's an API limit error
+      if (axios.isAxiosError(error) && error.response?.status === 429) {
+        console.log('News API request limit reached for market news');
+        marketNewsErrorShown = true;
+        // Return mock data instead of throwing
+        return getMockMarketNews(category);
+      } else {
+        marketNewsErrorShown = true;
+      }
+    }
+    
+    // Return mock data instead of throwing
+    return getMockMarketNews(category);
   }
 }
 
-// Helper function to get company name for a symbol
-function getCompanyName(symbol: string): string {
-  // Add company name mappings for better search results
-  const companyNames: Record<string, string> = {
-    'AAPL': 'Apple',
-    'MSFT': 'Microsoft',
-    'GOOGL': 'Google',
-    'AMZN': 'Amazon',
-    'META': 'Meta',
-    'TSLA': 'Tesla',
-    'NVDA': 'NVIDIA',
-    'HG': 'Hamilton Insurance Group',
-    'JPM': 'JPMorgan Chase',
-    'BAC': 'Bank of America',
-    'WMT': 'Walmart',
-    'JNJ': 'Johnson & Johnson',
-    'PG': 'Procter & Gamble',
-    'XOM': 'Exxon Mobil',
-    'V': 'Visa',
-    'MA': 'Mastercard',
-    'DIS': 'Disney',
-    'NFLX': 'Netflix',
-    'INTC': 'Intel',
-    'AMD': 'Advanced Micro Devices',
-    'IBM': 'IBM',
-    'CSCO': 'Cisco',
-    'ORCL': 'Oracle',
-    'CRM': 'Salesforce',
-  };
-  return companyNames[symbol] || symbol;
+// Mock market news data for fallback
+function getMockMarketNews(category: string): NewsItem[] {
+  const now = Date.now();
+  
+  return [
+    {
+      id: `mock-1-${now}`,
+      headline: "Markets Update: Stocks Rally on Economic Data",
+      summary: "Major indices climbed as new economic data suggested strong consumer spending.",
+      source: "Market News",
+      url: "#",
+      datetime: now,
+      category: category.toLowerCase(),
+      related: "Market News"
+    },
+    {
+      id: `mock-2-${now}`,
+      headline: "Fed Signals Potential Rate Cut in Coming Months",
+      summary: "Federal Reserve officials hinted at possible interest rate cuts as inflation pressures ease.",
+      source: "Financial Times",
+      url: "#",
+      datetime: now - 86400000,
+      category: category.toLowerCase(),
+      related: "Financial Times"
+    },
+    {
+      id: `mock-3-${now}`,
+      headline: "Earnings Season: What to Expect from Major Companies",
+      summary: "Analysts predict strong earnings from technology and financial sectors this quarter.",
+      source: "Business Insider",
+      url: "#",
+      datetime: now - 172800000,
+      category: category.toLowerCase(),
+      related: "Business Insider"
+    }
+  ];
 } 
