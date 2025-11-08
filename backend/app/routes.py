@@ -606,4 +606,118 @@ def get_mock_news_summary(symbol):
 - Competitors have responded with {'aggressive pricing strategies' if random.random() > 0.5 else 'new product launches'}
 - Industry analysts project {'favorable' if random.random() > 0.5 else 'challenging'} conditions for the sector in the coming quarters
 
-*Note: This is a simulated news summary based on known information about {symbol}.*""" 
+*Note: This is a simulated news summary based on known information about {symbol}.*"""
+
+@api_bp.route('/research', methods=['POST'])
+def get_research_response():
+    """Get AI-powered research response for chat conversations"""
+    try:
+        data = request.get_json()
+        if not data or 'message' not in data:
+            return jsonify({"error": "Message is required"}), 400
+            
+        message = data['message']
+        prompt_type = data.get('promptType', 'GENERAL_ADVISOR')
+        
+        print(f"Getting research response for prompt type: {prompt_type}")
+        
+        if not XAI_API_KEY:
+            print("X.AI API key is not configured")
+            return jsonify({
+                "response": get_mock_research_response(message, prompt_type),
+                "source": "mock",
+                "error": "X.AI API key is not configured"
+            })
+            
+        headers = {
+            'Content-Type': 'application/json',
+            'Authorization': f'Bearer {XAI_API_KEY}'
+        }
+        
+        # Create system prompt based on prompt type
+        system_prompts = {
+            'GENERAL_ADVISOR': "You are a knowledgeable financial advisor. Provide helpful, accurate information about investing, stocks, and financial markets. Be professional and conservative in your advice.",
+            'PORTFOLIO_ADVISOR': "You are a portfolio management expert. Help users with portfolio construction, asset allocation, risk management, and investment strategy. Focus on diversification and long-term planning.",
+            'NEWS_SUMMARY': "You are a financial news analyst. Provide concise summaries of market news and developments that could impact investments.",
+            'WEBSITE_HELP': "You are a helpful assistant for a financial website. Provide guidance on using the platform and understanding financial data.",
+            'STOCK_RECOMMENDATIONS': "You are a stock research analyst. Provide detailed analysis of stocks, including fundamentals, technicals, and market conditions. Always include appropriate disclaimers about investment risks."
+        }
+        
+        system_prompt = system_prompts.get(prompt_type, system_prompts['GENERAL_ADVISOR'])
+        
+        body = {
+            "model": "grok-2-latest",
+            "messages": [
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": message}
+            ],
+            "temperature": 0.7,
+            "max_tokens": 1000
+        }
+        
+        print(f"Making X.AI API request for research response...")
+        
+        response = requests.post(
+            f"{XAI_API_URL}/chat/completions",
+            headers=headers,
+            json=body,
+            timeout=30  # 30 second timeout for AI models
+        )
+        
+        print(f"X.AI API response status: {response.status_code}")
+        
+        if response.status_code == 200:
+            data = response.json()
+            print(f"X.AI API response received")
+            
+            if 'choices' in data and len(data['choices']) > 0:
+                ai_response = data['choices'][0]['message']['content']
+                return jsonify({
+                    "response": ai_response,
+                    "source": "xai"
+                })
+            else:
+                print(f"Invalid response format from X.AI API: {data}")
+                # Fall back to mock data
+                return jsonify({
+                    "response": get_mock_research_response(message, prompt_type),
+                    "source": "mock",
+                    "error": "Invalid API response format"
+                })
+        else:
+            error_message = f"Error calling X.AI API: {response.status_code}"
+            try:
+                error_details = response.text
+            except:
+                error_details = "No response text available"
+                
+            print(f"{error_message} - {error_details}")
+            # Fall back to mock data
+            return jsonify({
+                "response": get_mock_research_response(message, prompt_type),
+                "source": "mock",
+                "error": error_message
+            })
+            
+    except Exception as e:
+        error_message = f"Error generating research response: {str(e)}"
+        print(error_message)
+        print(traceback.format_exc())
+        # Fall back to mock data
+        return jsonify({
+            "response": get_mock_research_response(data.get('message', ''), data.get('promptType', 'GENERAL_ADVISOR')),
+            "source": "mock",
+            "error": error_message
+        })
+
+def get_mock_research_response(message, prompt_type):
+    """Generate a mock research response when API fails"""
+    responses = {
+        'GENERAL_ADVISOR': "Based on current market conditions, I recommend maintaining a diversified portfolio. Consider your risk tolerance and investment timeline when making decisions. Remember that past performance doesn't guarantee future results.",
+        'PORTFOLIO_ADVISOR': "For portfolio construction, I suggest allocating across different asset classes. A typical balanced portfolio might include 60% stocks, 30% bonds, and 10% alternatives, but this should be adjusted based on your specific situation and goals.",
+        'NEWS_SUMMARY': "Today's market news includes mixed economic data and ongoing concerns about inflation. Major indices are showing modest gains, with technology stocks leading the advance.",
+        'WEBSITE_HELP': "This platform provides comprehensive financial data and analysis tools. You can view stock quotes, historical data, and market indices. Use the search function to find specific stocks or the dashboard for an overview.",
+        'STOCK_RECOMMENDATIONS': "When evaluating stocks, consider fundamental factors like earnings growth, valuation metrics, and competitive positioning. Technical analysis can also provide insights into price trends. Always conduct thorough research and consider consulting a financial advisor."
+    }
+    
+    return responses.get(prompt_type, responses['GENERAL_ADVISOR'])

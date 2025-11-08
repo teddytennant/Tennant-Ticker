@@ -204,9 +204,7 @@ const AppRoutes = memo(function AppRoutes() {
       <RouterDebugger />
       <Routes>
         {/* Public route */}
-        <Route path="/login" element={
-          isAuthenticated ? <Navigate to="/" replace /> : <LoginPage />
-        } />
+        <Route path="/login" element={<LoginPage />} />
         
         {/* Protected routes */}
         <Route path="/" element={
