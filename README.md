@@ -21,8 +21,8 @@ TennantTicker is a professional-grade market data platform designed to provide i
 ### 1. Clone the repository
 
 ```bash
-git clone <repository-url>
-cd tennantticker
+git clone https://github.com/teddytennant/Tennant-Ticker.git
+cd Tennant-Ticker
 ```
 
 ### 2. Set up API keys
