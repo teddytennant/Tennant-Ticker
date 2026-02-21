@@ -1,9 +1,3 @@
-// Admin user credentials - DO NOT COMMIT ACTUAL CREDENTIALS
-export const ADMIN_CREDENTIALS = {
-  email: 'admin@tennant-ticker.com',
-  password: 'TT_Admin_2024!', // Change this to a secure password
-};
-
 // Admin user permissions
 export const ADMIN_PERMISSIONS = {
   canAccessAll: true,
@@ -15,7 +9,14 @@ export const ADMIN_PERMISSIONS = {
   stockLimit: Infinity,
 };
 
+// Admin email should be configured via environment variable
+const ADMIN_EMAIL = import.meta.env.VITE_ADMIN_EMAIL || '';
+
 // Function to check if a user is an admin
 export function isAdmin(email: string): boolean {
-  return email === ADMIN_CREDENTIALS.email;
-} 
+  if (!ADMIN_EMAIL) {
+    console.warn('VITE_ADMIN_EMAIL environment variable is not set. Admin check will always return false.');
+    return false;
+  }
+  return email === ADMIN_EMAIL;
+}
