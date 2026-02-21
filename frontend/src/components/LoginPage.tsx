@@ -17,7 +17,7 @@ export function LoginPage() {
     setIsSubmitting(true);
     
     try {
-      const success = login(password);
+      const success = await login(password);
       
       if (success) {
         navigate('/', { replace: true });
