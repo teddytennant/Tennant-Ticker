@@ -441,7 +441,7 @@ def health():
 def test_xai_api():
     """Test endpoint for X.AI API connectivity"""
     try:
-        print(f"Testing X.AI API connection with key: {XAI_API_KEY[:10]}...")
+        print("Testing X.AI API connection...")
         
         if not XAI_API_KEY:
             return jsonify({"error": "X.AI API key is not configured"}), 400
@@ -527,10 +527,9 @@ def get_stock_news_summary(symbol):
             "max_tokens": 500
         }
         
-        # Print full details of our request
+        # Print request details (without sensitive data)
         print(f"X.AI API URL: {XAI_API_URL}")
-        print(f"X.AI API Key (first 10 chars): {XAI_API_KEY[:10]}...")
-        print(f"Request body: {json.dumps(body)}")
+        print(f"X.AI API Key: {'configured' if XAI_API_KEY else 'missing'}")
         
         response = requests.post(
             f"{XAI_API_URL}/chat/completions",
