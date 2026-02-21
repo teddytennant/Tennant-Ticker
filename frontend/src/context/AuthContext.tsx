@@ -4,7 +4,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 interface AuthContextType {
   isAuthenticated: boolean;
   isLoading: boolean;
-  login: (password: string) => boolean;
+  login: (password: string) => Promise<boolean>;
   logout: () => void;
 }
 
@@ -54,25 +54,33 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setIsAuthenticated(newState);
   }, [isAuthenticated]);
 
-  // Login function
-  const login = useCallback((password: string): boolean => {
-    const isValid = password === 'stockmonitor2025';
-    
-    if (isValid) {
-      try {
-        localStorage.setItem('auth_token', 'authenticated');
+  // Login function - validates password server-side
+  const login = useCallback(async (password: string): Promise<boolean> => {
+    try {
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password }),
+      });
+
+      const data = await response.json();
+      const isValid = response.ok && data.authenticated === true;
+
+      if (isValid) {
+        localStorage.setItem('auth_token', data.token || 'authenticated');
         handleAuthChange(true);
-        
+
         // Get the redirect path from URL or default to home
         const params = new URLSearchParams(location.search);
         const redirectTo = params.get('redirect') || '/';
         navigate(redirectTo);
-      } catch (error) {
-        console.error('Error saving auth status:', error);
       }
+
+      return isValid;
+    } catch (error) {
+      console.error('Error during login:', error);
+      return false;
     }
-    
-    return isValid;
   }, [handleAuthChange, navigate, location]);
 
   // Logout function
