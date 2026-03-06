@@ -2,7 +2,6 @@ import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Newspaper, TrendingUp, ExternalLink, BarChart3, LineChart, AlertTriangle, ThumbsUp, ThumbsDown, ChevronDown, ChevronUp, Info, Briefcase, PieChart, DollarSign, Activity, ArrowUpDown, Calendar, Percent, Award, XCircle, RefreshCw, Users, XCircleIcon, X, Trash2, Edit3, Check, PlusCircle, TrendingDown } from 'lucide-react'; // Added TrendingDown
 import { Stock } from '../types/index'; // Removed HistoricalDataPoint import
-import { getDetailedStockDataAV, getCompetitorDataAV } from '../services/alphaVantageApi';
 import toast from 'react-hot-toast';
 import { ResponsiveContainer, AreaChart, Area, Tooltip as RechartsTooltip } from 'recharts'; // Added RechartsTooltip
 
