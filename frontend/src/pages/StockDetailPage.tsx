@@ -4,8 +4,8 @@ import { ArrowLeft, RefreshCw, TrendingUp, BarChart3, LineChart, Activity, Info,
 import { getStockQuote, getCompanyOverview, getHistoricalData } from '../services/stockApi';
 import { getStockNews } from '../services/newsApi';
 import { getStockNewsSummary } from '../services/researchApi';
-import { getTechnicalIndicatorsAV } from '../services/alphaVantageApi';
 import { NewsItem, StockQuote } from '../types';
+import ReactMarkdown from 'react-markdown';
 import toast from 'react-hot-toast';
 import { AppDock } from '../components/AppDock';
 import { 
@@ -812,15 +812,8 @@ export function StockDetailPage() {
                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
                   </div>
                 ) : (
-                  <div className="prose prose-sm prose-invert max-w-none">
-                    <div 
-                      className="whitespace-pre-line text-gray-300"
-                      dangerouslySetInnerHTML={{ 
-                        __html: data.newsSummary
-                          .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-                          .replace(/\n/g, '<br />') 
-                      }}
-                    />
+                  <div className="prose prose-sm prose-invert max-w-none text-gray-300">
+                    <ReactMarkdown>{data.newsSummary}</ReactMarkdown>
                   </div>
                 )}
               </div>
