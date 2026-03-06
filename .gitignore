@@ -43,7 +43,18 @@ stockmonitor-netlify-*
 stockmonitor-deploy-ready-*
 stockmonitor-build
 
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.venv
+venv/
+
+# PID files
+*.pid
+.backend_pid
+
 # Cache
 .eslintcache
-.cache 
+.cache
 node_modules
