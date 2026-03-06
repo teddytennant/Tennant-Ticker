@@ -6,8 +6,13 @@ interface ProtectedRouteProps {
   children: React.ReactNode;
 }
 
-// Fixed ProtectedRoute that prevents re-render loops
 export const ProtectedRoute = memo(function ProtectedRoute({ children }: ProtectedRouteProps) {
-  // Temporarily bypass authentication to test if app loads
+  const { isAuthenticated } = useAuth();
+  const location = useLocation();
+
+  if (!isAuthenticated) {
+    return <Navigate to={`/login?redirect=${encodeURIComponent(location.pathname)}`} replace />;
+  }
+
   return <>{children}</>;
 }); 
